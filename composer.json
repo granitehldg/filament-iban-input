@@ -5,8 +5,7 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Granite Holding",
-            "email": "dev@granitehldg.com"
+            "name": "Granite Holding"
         }
     ],
     "require": {
