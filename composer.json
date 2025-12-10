@@ -1,0 +1,31 @@
+{
+    "name": "granitehldg/filament-iban",
+    "description": "A Filament v3 plugin for IBAN input with validation and formatting",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Granite Holding",
+            "email": "dev@granitehldg.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "filament/forms": "^3.0",
+        "spatie/laravel-package-tools": "^1.14"
+    },
+    "autoload": {
+        "psr-4": {
+            "Granite\\FilamentIban\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Granite\\FilamentIban\\FilamentIbanServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

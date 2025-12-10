@@ -1,0 +1,26 @@
+.fi-iban-input-wrapper {
+    [x-cloak] {
+        display: none !important;
+    }
+
+    select {
+        appearance: none;
+        background-image: none;
+    }
+
+    input[type="text"] {
+        letter-spacing: 0.025em;
+    }
+
+    /* Smooth transitions for status messages */
+    [x-show] {
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    /* Ensure proper spacing in dark mode */
+    @media (prefers-color-scheme: dark) {
+        select {
+            color-scheme: dark;
+        }
+    }
+}
