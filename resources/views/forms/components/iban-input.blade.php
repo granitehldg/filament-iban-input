@@ -32,7 +32,7 @@
             'is-invalid': isValid === false,
         }"
     >
-        <div class="flex items-center">
+        <div class="flex items-center" dir="ltr">
             {{-- Country Code Select --}}
             <select
                 x-model="countryCode"
@@ -57,6 +57,7 @@
                 placeholder="00 0000 0000 00000000000000000"
                 autocomplete="off"
                 spellcheck="false"
+                dir="ltr"
                 class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono"
             />
 
