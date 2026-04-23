@@ -11,8 +11,8 @@
     "require": {
         "php": "^8.2",
         "ext-bcmath": "*",
-        "filament/forms": "^4.0",
-        "filament/support": "^4.0",
+        "filament/forms": "^3.0 || ^4.0",
+        "filament/support": "^3.0 || ^4.0",
         "spatie/laravel-package-tools": "^1.14"
     },
     "require-dev": {
