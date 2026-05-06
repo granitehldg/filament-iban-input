@@ -1,74 +1,121 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Granite\FilamentIban\Forms\Components;
 
+use Closure;
 use Filament\Forms\Components\Field;
 use Filament\Support\Concerns\HasExtraAlpineAttributes;
+use Filament\Support\Concerns\HasPlaceholder;
 
 class IbanInput extends Field
 {
     use HasExtraAlpineAttributes;
+    use HasPlaceholder;
 
     protected string $view = 'filament-iban::forms.components.iban-input';
 
-    protected array $defaultCountries = ['UA', 'EG', 'DE', 'GB', 'FR', 'NL'];
+    protected array|Closure $defaultCountries = ['UA', 'EG', 'DE', 'GB', 'FR', 'NL'];
 
-    protected array $countryLengths = [
-        'UA' => 27,
-        'EG' => 27,
-        'DE' => 20,
-        'GB' => 20,
-        'FR' => 25,
-        'NL' => 16,
-    ];
-
-    protected ?string $defaultCountry = 'UA';
+    protected null|string|Closure $defaultCountry = 'UA';
 
     protected bool $validateChecksum = true;
 
     protected int $maxDigits = 27;
 
-    public function countries(array $countries): static
+    protected bool|Closure $acceptAllCountries = false;
+
+    /**
+     * ISO 13616 IBAN body lengths (total IBAN length minus the 2-letter country code).
+     * Values represent the number of alphanumeric characters after the country code.
+     *
+     * @var array<string, int>
+     */
+    protected array $countryLengths = [
+        'AD' => 22, 'AE' => 21, 'AL' => 26, 'AT' => 18, 'AZ' => 26,
+        'BA' => 18, 'BE' => 14, 'BG' => 20, 'BH' => 20, 'BR' => 27,
+        'BY' => 26, 'CH' => 19, 'CR' => 20, 'CY' => 26, 'CZ' => 22,
+        'DE' => 20, 'DK' => 16, 'DO' => 26, 'EE' => 18, 'EG' => 27,
+        'ES' => 22, 'FI' => 16, 'FO' => 16, 'FR' => 25, 'GB' => 20,
+        'GE' => 20, 'GI' => 21, 'GL' => 16, 'GR' => 25, 'GT' => 26,
+        'HR' => 19, 'HU' => 26, 'IE' => 20, 'IL' => 21, 'IQ' => 21,
+        'IS' => 24, 'IT' => 25, 'JO' => 28, 'KW' => 28, 'KZ' => 18,
+        'LB' => 26, 'LC' => 30, 'LI' => 19, 'LT' => 18, 'LU' => 18,
+        'LV' => 19, 'MC' => 25, 'MD' => 22, 'ME' => 20, 'MK' => 17,
+        'MR' => 25, 'MT' => 29, 'MU' => 28, 'NL' => 16, 'NO' => 13,
+        'PK' => 22, 'PL' => 26, 'PS' => 27, 'PT' => 23, 'QA' => 27,
+        'RO' => 22, 'RS' => 20, 'SA' => 22, 'SC' => 29, 'SD' => 16,
+        'SE' => 22, 'SI' => 17, 'SK' => 22, 'SM' => 25, 'ST' => 23,
+        'SV' => 26, 'TL' => 21, 'TN' => 22, 'TR' => 24, 'UA' => 27,
+        'VA' => 20, 'VG' => 22, 'XK' => 18, 'YE' => 28,
+    ];
+
+    /**
+     * Set the available country codes. Accepts a plain array or a Closure returning an array.
+     */
+    public function countries(array|Closure $countries): static
     {
-        $this->defaultCountries = array_map(
-            static fn (string $country): string => strtoupper($country),
-            $countries,
-        );
+        $this->defaultCountries = $countries;
 
         return $this;
     }
 
+    /**
+     * Allow any IBAN country code, bypassing the country whitelist.
+     * Checksum validation still applies.
+     * Accepts a boolean or a Closure returning a boolean.
+     */
+    public function allCountries(bool|Closure $condition = true): static
+    {
+        $this->acceptAllCountries = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Get the available country codes.
+     */
     public function getCountries(): array
     {
         return $this->evaluate($this->defaultCountries);
     }
 
-    public function countryLengths(array $countryLengths): static
-    {
-        $this->countryLengths = array_change_key_case($countryLengths, CASE_UPPER);
-
-        return $this;
-    }
-
+    /**
+     * Get the ISO 13616 per-country IBAN body lengths for frontend validation.
+     */
     public function getCountryLengths(): array
     {
-        return $this->evaluate($this->countryLengths);
+        return $this->countryLengths;
     }
 
-    public function defaultCountry(?string $country): static
+    /**
+     * Whether all country codes are accepted.
+     */
+    public function acceptsAllCountries(): bool
     {
-        $this->defaultCountry = $country !== null ? strtoupper($country) : null;
+        return (bool) $this->evaluate($this->acceptAllCountries);
+    }
+
+    /**
+     * Set the default country code. Accepts a string, null, or a Closure.
+     */
+    public function defaultCountry(null|string|Closure $country): static
+    {
+        $this->defaultCountry = $country;
 
         return $this;
     }
 
+    /**
+     * Get the default country code.
+     */
     public function getDefaultCountry(): ?string
     {
         return $this->evaluate($this->defaultCountry);
     }
 
+    /**
+     * Enable or disable checksum validation.
+     */
     public function validateChecksum(bool $validate = true): static
     {
         $this->validateChecksum = $validate;
@@ -76,11 +123,17 @@ class IbanInput extends Field
         return $this;
     }
 
+    /**
+     * Check if checksum validation is enabled.
+     */
     public function shouldValidateChecksum(): bool
     {
         return $this->evaluate($this->validateChecksum);
     }
 
+    /**
+     * Set the maximum number of digits.
+     */
     public function maxDigits(int $max): static
     {
         $this->maxDigits = $max;
@@ -88,38 +141,26 @@ class IbanInput extends Field
         return $this;
     }
 
+    /**
+     * Get the maximum number of digits.
+     */
     public function getMaxDigits(): int
     {
         return $this->evaluate($this->maxDigits);
     }
 
-    public function getMaxDigitsForCountry(?string $countryCode = null): int
-    {
-        if ($countryCode === null) {
-            return $this->getMaxDigits();
-        }
-
-        return $this->getCountryLengths()[strtoupper($countryCode)] ?? $this->getMaxDigits();
-    }
-
-    public static function normalize(string $iban): string
-    {
-        return preg_replace('/[^A-Z0-9]/', '', strtoupper($iban)) ?? '';
-    }
-
+    /**
+     * Validate IBAN checksum using modulo 97.
+     */
     public static function validateIbanChecksum(string $iban): bool
     {
-        $stripped = static::normalize($iban);
+        $stripped = str_replace(' ', '', strtoupper($iban));
 
         if (strlen($stripped) < 4) {
             return false;
         }
 
-        if (! preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]+$/', $stripped)) {
-            return false;
-        }
-
-        $rearranged = substr($stripped, 4) . substr($stripped, 0, 4);
+        $rearranged = substr($stripped, 4).substr($stripped, 0, 4);
         $numeric = '';
 
         for ($i = 0, $iMax = strlen($rearranged); $i < $iMax; $i++) {
@@ -140,8 +181,8 @@ class IbanInput extends Field
                     return;
                 }
 
-                $normalized = static::normalize((string) $value);
-                $countryCode = substr($normalized, 0, 2);
+                $countryCode = strtoupper(substr($value, 0, 2));
+                $body = substr($value, 2);
 
                 if (strlen($countryCode) !== 2 || ! ctype_alpha($countryCode)) {
                     $fail("The {$attribute} has an invalid country code.");
@@ -149,28 +190,42 @@ class IbanInput extends Field
                     return;
                 }
 
-                if (! in_array($countryCode, $this->getCountries(), true)) {
+                if (! $this->acceptsAllCountries() && ! in_array($countryCode, $this->getCountries(), true)) {
                     $fail("The {$attribute} has an invalid country code.");
 
                     return;
                 }
 
-                if (! ctype_digit(substr($normalized, 2, 2))) {
-                    $fail("The {$attribute} must contain two numeric check digits after the country code.");
+                // Even in allCountries() mode, the country code must be a known IBAN-issuing country
+                if (! array_key_exists($countryCode, $this->countryLengths)) {
+                    $fail("The {$attribute} country code does not support IBAN.");
 
                     return;
                 }
 
-                $body = substr($normalized, 2);
-                $expectedLength = $this->getMaxDigitsForCountry($countryCode);
+                // Validate body length against known country spec, or maxDigits fallback
+                $expectedBodyLength = $this->countryLengths[$countryCode] ?? null;
 
-                if (strlen($body) !== $expectedLength) {
-                    $fail("The {$attribute} must contain exactly {$expectedLength} characters after the country code.");
+                if ($expectedBodyLength !== null) {
+                    $bodyNormalized = preg_replace('/[^A-Z0-9]/', '', strtoupper($body));
 
-                    return;
+                    if (strlen($bodyNormalized) !== $expectedBodyLength) {
+                        $fail("The {$attribute} is not the correct length for a {$countryCode} IBAN.");
+
+                        return;
+                    }
+                } elseif (! $this->acceptsAllCountries()) {
+                    // Unknown country in restricted mode — fall back to maxDigits
+                    $bodyNormalized = preg_replace('/[^A-Z0-9]/', '', strtoupper($body));
+
+                    if (strlen($bodyNormalized) !== $this->getMaxDigits()) {
+                        $fail("The {$attribute} must contain exactly {$this->getMaxDigits()} characters.");
+
+                        return;
+                    }
                 }
 
-                if ($this->shouldValidateChecksum() && ! static::validateIbanChecksum($normalized)) {
+                if ($this->shouldValidateChecksum() && ! static::validateIbanChecksum($value)) {
                     $fail("The {$attribute} has an invalid checksum.");
                 }
             };

@@ -1,6 +1,7 @@
 {
     "name": "granitehldg/filament-iban",
     "description": "A Filament IBAN input with validation and formatting",
+    "version": "4.1.0",
     "type": "library",
     "license": "MIT",
     "authors": [

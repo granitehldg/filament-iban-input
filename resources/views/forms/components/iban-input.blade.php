@@ -1,5 +1,4 @@
 @php
-    $id = $getId();
     $isDisabled = $isDisabled();
     $statePath = $getStatePath();
     $countries = $getCountries();
@@ -7,6 +6,7 @@
     $defaultCountry = $getDefaultCountry();
     $fallbackMaxDigits = $getMaxDigits();
     $validateChecksum = $shouldValidateChecksum();
+    $acceptAllCountries = $acceptsAllCountries();
 
     $cssUrl = \Filament\Support\Facades\FilamentAsset::getStyleHref('filament-iban', package: 'granite/filament-iban');
     $compiledCssUrl = \Illuminate\Support\Js::from($cssUrl);
@@ -26,6 +26,7 @@
             defaultCountry: '{{ $defaultCountry }}',
             fallbackMaxDigits: {{ $fallbackMaxDigits }},
             validateChecksum: {{ $validateChecksum ? 'true' : 'false' }},
+            acceptAllCountries: {{ $acceptAllCountries ? 'true' : 'false' }},
         })"
         x-load-css="[{{ $compiledCssUrl }}]"
         x-bind:class="{
@@ -35,29 +36,46 @@
         }"
     >
         <div class="flex items-center">
-            <select
-                x-model="countryCode"
-                @change="updateFullIban"
-                :disabled="disabled"
-                class="fi-iban-country-select border-0 bg-transparent py-1.5 pl-3 pr-7 text-gray-950 dark:text-white text-sm font-medium focus:ring-0 sm:text-sm sm:leading-6"
-            >
-                @foreach ($countries as $country)
-                    <option value="{{ $country }}">{{ $country }}</option>
-                @endforeach
-            </select>
+            @if (! $acceptAllCountries)
+                @if (count($countries) === 1)
+                    <span class="fi-iban-country-label border-0 bg-transparent py-1.5 pl-3 pr-3 text-gray-950 dark:text-white text-sm font-medium sm:text-sm sm:leading-6 select-none">{{ $countries[0] }}</span>
+                @else
+                    <select
+                        x-model="countryCode"
+                        @change="updateFullIban"
+                        :disabled="disabled"
+                        class="fi-iban-country-select border-0 bg-transparent py-1.5 pl-3 pr-7 text-gray-950 dark:text-white text-sm font-medium focus:ring-0 sm:text-sm sm:leading-6"
+                    >
+                        @foreach ($countries as $country)
+                            <option value="{{ $country }}">{{ $country }}</option>
+                        @endforeach
+                    </select>
+                @endif
 
-            <div class="h-5 w-px bg-gray-200 dark:bg-white/10"></div>
+                <div class="h-5 w-px bg-gray-200 dark:bg-white/10"></div>
 
-            <input
-                type="text"
-                x-model="displayValue"
-                @input="handleInput"
-                :disabled="disabled"
-                placeholder="00 0000 0000 0000 0000 0000 000"
-                autocomplete="off"
-                spellcheck="false"
-                class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
-            />
+                <input
+                    type="text"
+                    x-model="displayValue"
+                    @input="handleInput"
+                    :disabled="disabled"
+                    placeholder="00 0000 0000 0000 0000 0000 000"
+                    autocomplete="off"
+                    spellcheck="false"
+                    class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
+                />
+            @else
+                <input
+                    type="text"
+                    x-model="freeFormValue"
+                    @input="handleFreeFormInput"
+                    :disabled="disabled"
+                    placeholder="{{ $getPlaceholder() ?? 'XX00 0000 0000 0000 0000 0000 0000 00' }}"
+                    autocomplete="off"
+                    spellcheck="false"
+                    class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
+                />
+            @endif
 
             <div class="flex items-center px-3">
                 <template x-if="isValid === true">
@@ -85,10 +103,12 @@
         state: config.state,
         countryCode: config.defaultCountry,
         displayValue: '',
+        freeFormValue: '',
         fallbackMaxDigits: config.fallbackMaxDigits,
         validateChecksum: config.validateChecksum,
         countries: config.countries,
         countryLengths: config.countryLengths,
+        acceptAllCountries: config.acceptAllCountries,
         fullIban: config.defaultCountry,
         disabled: false,
         isValid: null,
@@ -96,31 +116,66 @@
         init() {
             this.disabled = this.$root.hasAttribute('disabled');
 
-            if (this.state) {
-                this.syncFromState(this.state);
+            if (this.acceptAllCountries) {
+                if (this.state) {
+                    this.freeFormValue = this.formatFreeForm(this.state);
+                    this.updateValidation();
+                }
+
+                this.$watch('state', (value) => {
+                    if (! value) {
+                        this.freeFormValue = '';
+                        this.isValid = null;
+
+                        return;
+                    }
+
+                    const normalized = this.normalize(value);
+
+                    if (normalized !== this.normalize(this.freeFormValue)) {
+                        this.freeFormValue = this.formatFreeForm(normalized);
+                    }
+
+                    this.updateValidation();
+                });
             } else {
-                this.resetState();
-            }
-
-            this.$watch('state', (value) => {
-                if (! value) {
+                if (this.state) {
+                    this.syncFromState(this.state);
+                } else {
                     this.resetState();
-
-                    return;
                 }
 
-                const normalized = this.normalize(value);
+                this.$watch('state', (value) => {
+                    if (! value) {
+                        this.resetState();
 
-                if (normalized === this.fullIban) {
-                    return;
-                }
+                        return;
+                    }
 
-                this.syncFromState(normalized);
-            });
+                    const normalized = this.normalize(value);
+
+                    if (normalized === this.fullIban) {
+                        return;
+                    }
+
+                    this.syncFromState(normalized);
+                });
+            }
         },
 
         normalize(value) {
             return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        },
+
+        formatFreeForm(value) {
+            const normalized = this.normalize(value);
+            const country = normalized.substring(0, 2);
+            const expectedBodyLen = this.countryLengths[country] ?? null;
+            const maxLen = expectedBodyLen ? 2 + expectedBodyLen : null;
+            const capped = maxLen ? normalized.substring(0, maxLen) : normalized;
+            const parts = capped.match(/.{1,4}/g) ?? [];
+
+            return parts.join(' ');
         },
 
         maxLengthForCountry() {
@@ -174,15 +229,55 @@
             this.updateValidation();
         },
 
-        updateValidation() {
-            const body = this.normalize(this.displayValue);
+        handleFreeFormInput() {
+            const formatted = this.formatFreeForm(this.freeFormValue);
+            this.freeFormValue = formatted;
+            this.state = this.normalize(formatted);
+            this.updateValidation();
+        },
 
-            if (body.length === 0) {
-                this.isValid = null;
-            } else if (body.length === this.maxLengthForCountry()) {
-                this.isValid = this.validateChecksum ? this.validateIbanChecksum(this.fullIban) : true;
+        updateValidation() {
+            if (this.acceptAllCountries) {
+                const normalized = this.normalize(this.freeFormValue);
+
+                if (normalized.length < 2) {
+                    this.isValid = null;
+
+                    return;
+                }
+
+                const country = normalized.substring(0, 2);
+
+                // Reject non-IBAN countries immediately after 2 chars are typed
+                if (! (country in this.countryLengths)) {
+                    this.isValid = false;
+
+                    return;
+                }
+
+                const expectedBodyLen = this.countryLengths[country];
+
+                if (normalized.length < 2 + expectedBodyLen) {
+                    this.isValid = null;
+
+                    return;
+                }
+
+                if (normalized.length === 2 + expectedBodyLen) {
+                    this.isValid = this.validateChecksum ? this.validateIbanChecksum(normalized) : true;
+                } else {
+                    this.isValid = null;
+                }
             } else {
-                this.isValid = null;
+                const body = this.normalize(this.displayValue);
+
+                if (body.length === 0) {
+                    this.isValid = null;
+                } else if (body.length === this.maxLengthForCountry()) {
+                    this.isValid = this.validateChecksum ? this.validateIbanChecksum(this.fullIban) : true;
+                } else {
+                    this.isValid = null;
+                }
             }
         },
 
