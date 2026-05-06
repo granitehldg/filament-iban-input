@@ -45,6 +45,33 @@ final class IbanInputFieldTest extends TestCase
         }
     }
 
+    public function test_it_accepts_any_known_iban_country_when_all_countries_is_enabled(): void
+    {
+        $field = IbanInput::make('iban')->allCountries();
+
+        self::assertSame([], $this->validateField($field, 'SA0380000000608010167519'));
+    }
+
+    public function test_it_preserves_country_configuration_normalization(): void
+    {
+        $field = IbanInput::make('iban')
+            ->countries(['eg', 'gb'])
+            ->defaultCountry('eg');
+
+        self::assertSame(['EG', 'GB'], $field->getCountries());
+        self::assertSame('EG', $field->getDefaultCountry());
+    }
+
+    public function test_it_preserves_custom_country_lengths_configuration(): void
+    {
+        $field = IbanInput::make('iban')
+            ->countries(['ZZ'])
+            ->countryLengths(['zz' => 6])
+            ->validateChecksum(false);
+
+        self::assertSame([], $this->validateField($field, 'ZZ123456'));
+    }
+
     public function test_it_rejects_values_with_the_wrong_country_specific_length(): void
     {
         $field = IbanInput::make('iban');
@@ -71,6 +98,17 @@ final class IbanInputFieldTest extends TestCase
 
         self::assertIsString($href);
         self::assertNotSame('', $href);
+    }
+
+    public function test_the_view_preserves_ltr_direction_after_merging_main(): void
+    {
+        $view = file_get_contents(__DIR__.'/../../resources/views/forms/components/iban-input.blade.php');
+
+        self::assertStringNotContainsString('<<<<<<<', $view);
+        self::assertStringNotContainsString('=======', $view);
+        self::assertStringNotContainsString('>>>>>>>', $view);
+        self::assertStringContainsString('<div class="flex items-center" dir="ltr">', $view);
+        self::assertGreaterThanOrEqual(2, substr_count($view, 'dir="ltr"'));
     }
 
     private function validateField(IbanInput $field, string $value): array

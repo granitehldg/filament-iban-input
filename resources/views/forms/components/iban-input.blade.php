@@ -35,7 +35,7 @@
             'is-invalid': isValid === false,
         }"
     >
-        <div class="flex items-center">
+        <div class="flex items-center" dir="ltr">
             @if (! $acceptAllCountries)
                 @if (count($countries) === 1)
                     <span class="fi-iban-country-label border-0 bg-transparent py-1.5 pl-3 pr-3 text-gray-950 dark:text-white text-sm font-medium sm:text-sm sm:leading-6 select-none">{{ $countries[0] }}</span>
@@ -62,6 +62,7 @@
                     placeholder="00 0000 0000 0000 0000 0000 000"
                     autocomplete="off"
                     spellcheck="false"
+                    dir="ltr"
                     class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
                 />
             @else
@@ -73,6 +74,7 @@
                     placeholder="{{ $getPlaceholder() ?? 'XX00 0000 0000 0000 0000 0000 0000 00' }}"
                     autocomplete="off"
                     spellcheck="false"
+                    dir="ltr"
                     class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
                 />
             @endif
