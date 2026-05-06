@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Granite\FilamentIban;
 
 use Filament\Support\Assets\Css;
@@ -19,7 +21,7 @@ class FilamentIbanServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         FilamentAsset::register([
-            Css::make('filament-iban', __DIR__.'/../resources/dist/filament-iban.css')
+            Css::make('filament-iban', __DIR__ . '/../resources/dist/filament-iban.css')
                 ->loadedOnRequest(),
         ], 'granite/filament-iban');
     }
