@@ -1,6 +1,12 @@
 {
-    "name": "granitehldg/filament-iban",
+    "name": "granitehldg/filament-iban-input",
     "description": "A Filament IBAN input with validation and formatting",
+    "keywords": ["filament", "iban", "bank", "forms", "laravel"],
+    "homepage": "https://github.com/granitehldg/filament-iban-input",
+    "support": {
+        "issues": "https://github.com/granitehldg/filament-iban-input/issues",
+        "source": "https://github.com/granitehldg/filament-iban-input"
+    },
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -36,6 +42,5 @@
             ]
         }
     },
-    "minimum-stability": "dev",
     "prefer-stable": true
 }

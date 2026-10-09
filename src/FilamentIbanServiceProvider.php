@@ -14,15 +14,15 @@ class FilamentIbanServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('filament-iban')
+            ->name('filament-iban-input')
             ->hasViews();
     }
 
     public function packageBooted(): void
     {
         FilamentAsset::register([
-            Css::make('filament-iban', __DIR__ . '/../resources/dist/filament-iban.css')
+            Css::make('filament-iban-input', __DIR__ . '/../resources/dist/filament-iban-input.css')
                 ->loadedOnRequest(),
-        ], 'granite/filament-iban');
+        ], 'granitehldg/filament-iban-input');
     }
 }

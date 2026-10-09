@@ -8,7 +8,7 @@
     $validateChecksum = $shouldValidateChecksum();
     $acceptAllCountries = $acceptsAllCountries();
 
-    $cssUrl = \Filament\Support\Facades\FilamentAsset::getStyleHref('filament-iban', package: 'granite/filament-iban');
+    $cssUrl = \Filament\Support\Facades\FilamentAsset::getStyleHref('filament-iban-input', package: 'granitehldg/filament-iban-input');
     $compiledCssUrl = \Illuminate\Support\Js::from($cssUrl);
 @endphp
 

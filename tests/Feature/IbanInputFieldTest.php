@@ -94,7 +94,7 @@ final class IbanInputFieldTest extends TestCase
 
     public function test_it_registers_the_stylesheet_asset(): void
     {
-        $href = FilamentAsset::getStyleHref('filament-iban', package: 'granite/filament-iban');
+        $href = FilamentAsset::getStyleHref('filament-iban-input', package: 'granitehldg/filament-iban-input');
 
         self::assertIsString($href);
         self::assertNotSame('', $href);

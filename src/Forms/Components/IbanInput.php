@@ -14,7 +14,7 @@ class IbanInput extends Field
     use HasExtraAlpineAttributes;
     use HasPlaceholder;
 
-    protected string $view = 'filament-iban::forms.components.iban-input';
+    protected string $view = 'filament-iban-input::forms.components.iban-input';
 
     protected array|Closure $defaultCountries = ['UA', 'EG', 'DE', 'GB', 'FR', 'NL'];
 

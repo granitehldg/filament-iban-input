@@ -1,168 +1,152 @@
-# Filament IBAN Input Plugin
+# Filament IBAN Input
 
-A Filament v3 plugin that provides a beautiful IBAN (International Bank Account Number) input field with real-time formatting, validation, and checksum verification.
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/granitehldg/filament-iban-input.svg)](https://packagist.org/packages/granitehldg/filament-iban-input)
+[![Tests](https://img.shields.io/github/actions/workflow/status/granitehldg/filament-iban-input/run-tests.yml?label=tests)](https://github.com/granitehldg/filament-iban-input/actions)
+[![Total Downloads](https://img.shields.io/packagist/dt/granitehldg/filament-iban-input.svg)](https://packagist.org/packages/granitehldg/filament-iban-input)
+[![License](https://img.shields.io/packagist/l/granitehldg/filament-iban-input.svg)](https://github.com/granitehldg/filament-iban-input/blob/main/LICENSE)
+
+A [Filament](https://filamentphp.com) form field for IBAN (International Bank Account Number) input with real-time formatting, per-country length validation (ISO 13616), and mod-97 checksum verification.
 
 ## Features
 
-- **Real-time Formatting**: Automatically formats IBAN digits as user types (2-4-4-17 pattern)
-- **Country Code Selection**: Dropdown for selecting the country code prefix
-- **Checksum Validation**: Validates IBAN using modulo 97 algorithm
-- **Visual Feedback**: Real-time status indicators (valid, invalid, incomplete)
-- **Dark Mode Support**: Fully compatible with Filament's dark mode
-- **Copy to Clipboard**: Built-in copy functionality for the complete IBAN
-- **Customizable**: Configure available countries, default country, and validation rules
+- Real-time formatting with country code dropdown
+- Per-country IBAN length validation (ISO 13616, ~100 countries)
+- Mod-97 checksum validation (can be disabled)
+- Server-side + client-side (Alpine.js) validation
+- Dark mode support, LTR-safe, copy-to-clipboard
+- Works with Filament v3 and v4
+
+## Requirements
+
+- PHP `^8.2` with `ext-bcmath`
+- Laravel with Filament `^3.0 || ^4.0`
 
 ## Installation
 
-The package is already installed in this project as a local path repository.
+```bash
+composer require granitehldg/filament-iban-input
+```
 
-To use it in other projects:
+The service provider is auto-discovered. No manual registration needed.
+
+Optionally publish the views:
 
 ```bash
-composer require granitehldg/filament-iban
+php artisan vendor:publish --tag=filament-iban-input-views
 ```
 
 ## Usage
 
-### Basic Usage
+### Basic usage
 
 ```php
 use Granite\FilamentIban\Forms\Components\IbanInput;
 
 IbanInput::make('iban')
     ->label('Bank Account (IBAN)')
-    ->required()
+    ->required();
 ```
 
-### With Custom Countries
+### Limit countries
 
 ```php
 IbanInput::make('iban')
-    ->label('Bank Account (IBAN)')
     ->countries(['DE', 'FR', 'NL', 'GB'])
     ->defaultCountry('DE')
-    ->required()
+    ->required();
 ```
 
-### Disable Checksum Validation
+### Accept all IBAN countries
+
+By default only `['UA', 'EG', 'DE', 'GB', 'FR', 'NL']` are offered. To accept any known ISO 13616 country:
 
 ```php
 IbanInput::make('iban')
-    ->label('Bank Account (IBAN)')
-    ->validateChecksum(false) // Only validates format, not checksum
-    ->required()
+    ->allCountries()
+    ->required();
 ```
 
-### Custom Digit Length
+### Disable checksum validation
 
 ```php
 IbanInput::make('iban')
-    ->label('Bank Account (IBAN)')
-    ->maxDigits(27) // Default is 27
-    ->required()
+    ->validateChecksum(false) // format/length only
+    ->required();
 ```
 
-### Show Full IBAN Display
-
-To display the full IBAN with copy functionality, add helper text:
+### Custom lengths
 
 ```php
 IbanInput::make('iban')
-    ->label('Bank Account (IBAN)')
-    ->helperText('The complete IBAN will be displayed below')
-    ->required()
+    ->countries(['ZZ'])
+    ->countryLengths(['ZZ' => 6])
+    ->validateChecksum(false);
 ```
+
+The component stores the complete IBAN as a single string, e.g. `DE89370400440532013000`.
+
+### Helpers
+
+```php
+use Granite\FilamentIban\Forms\Components\IbanInput;
+
+IbanInput::validateIbanChecksum('DE89370400440532013000'); // true
+IbanInput::normalize('de89 3704 0044 0532 0130 00'); // DE89370400440532013000
+```
+
+See [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md) for migrations, models, and advanced validation examples.
 
 ## Validation
 
-The component automatically validates:
+Server-side validation checks, in order:
 
-1. **Country Code**: Must be one of the allowed countries
-2. **Length**: Must contain exactly the specified number of digits (default: 27)
-3. **Checksum**: Validates using the modulo 97 algorithm (can be disabled)
+1. Country code is 2 letters and (unless `allCountries()`) in the allowed list
+2. Two numeric check digits after the country code
+3. Body length matches the per-country ISO 13616 length
+4. Mod-97 checksum equals `1` (unless disabled)
 
-### Server-Side Validation
+Empty values pass through so `->required()` / `->nullable()` behave as expected.
 
-The validation happens both client-side (for immediate feedback) and server-side (for security).
-
-### Custom Validation
-
-You can add additional validation rules:
-
-```php
-IbanInput::make('iban')
-    ->label('Bank Account (IBAN)')
-    ->rule('unique:bank_accounts,iban')
-    ->required()
-```
-
-## Data Format
-
-The component stores the complete IBAN as a single string with the country code:
-
-```
-UA380019000500000026318000212
-```
-
-- First 2 characters: Country code (e.g., 'UA')
-- Remaining characters: Formatted digits
-
-## Styling
-
-The component uses Filament's design system and automatically adapts to:
-- Light/Dark mode
-- Form field states (error, disabled, focused)
-- Responsive layouts
-
-## Development
-
-### Building Assets
-
-To rebuild the CSS after making changes:
+## Testing
 
 ```bash
-cd packages/filament-iban
+composer install
+vendor/bin/phpunit
+```
+
+Valid IBANs for manual testing:
+
+- `DE89370400440532013000`
+- `GB29NWBK60161331926819`
+- `FR1420041010050500013M02606`
+- `NL91ABNA0417164300`
+- `UA213223130000026007233566001`
+
+## Building assets
+
+```bash
 npm install
 npm run build
 ```
 
-### Testing
+This compiles `resources/css/index.css` to `resources/dist/filament-iban-input.css`. Commit the built file before tagging a release.
 
-The IBAN validation uses the standard modulo 97 algorithm as defined in ISO 13616.
+## Changelog
 
-Example valid IBANs for testing:
-- UA380019000500000026318000212
-- DE89370400440532013000
-- GB82WEST12345698765432
+See [CHANGELOG.md](CHANGELOG.md) for release notes. Follow [SemVer](https://semver.org): tagged releases (`v4.1.0`, ...) are what Packagist publishes.
 
-## Technical Details
+## Contributing
 
-### IBAN Validation Algorithm
+Issues and PRs are welcome. Please run tests before submitting.
 
-The checksum validation follows the ISO 13616 standard:
+## Security
 
-1. Move the first 4 characters to the end
-2. Convert letters to numbers (A=10, B=11, ..., Z=35)
-3. Calculate modulo 97 of the resulting number
-4. Valid if remainder equals 1
-
-### Components
-
-- **IbanInput.php**: Main form field class (`packages/filament-iban/src/Forms/Components/IbanInput.php:1`)
-- **iban-input.blade.php**: Blade view with Alpine.js component
-- **FilamentIbanServiceProvider.php**: Service provider for asset registration
-
-## Browser Support
-
-Works in all modern browsers that support:
-- Alpine.js
-- CSS Grid
-- ES6 JavaScript
-
-## License
-
-MIT
+If you discover a security issue, please email the maintainers privately instead of opening a public issue.
 
 ## Credits
 
-Developed by Granite Holding
+Developed by [Granite Holding](https://github.com/granitehldg).
+
+## License
+
+MIT. See [LICENSE](LICENSE).

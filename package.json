@@ -1,9 +1,9 @@
 {
-    "name": "filament-iban",
+    "name": "filament-iban-input",
     "version": "1.0.0",
     "description": "Filament v3 IBAN input plugin",
     "scripts": {
-        "build": "postcss resources/css/index.css -o resources/dist/filament-iban.css"
+        "build": "postcss resources/css/index.css -o resources/dist/filament-iban-input.css"
     },
     "devDependencies": {
         "postcss": "^8.4.31",
