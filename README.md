@@ -19,7 +19,7 @@ A [Filament](https://filamentphp.com) form field for IBAN (International Bank Ac
 ## Requirements
 
 - PHP `^8.2` with `ext-bcmath`
-- Laravel with Filament `^3.0 || ^4.0 || ^5.0`
+- Laravel with Filament `^3.3.53 || ^4.14 || ^5.9`
 
 ## Installation
 

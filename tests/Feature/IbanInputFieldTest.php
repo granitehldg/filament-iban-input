@@ -122,7 +122,7 @@ final class IbanInputFieldTest extends TestCase
         Livewire::test($form)
             ->assertSeeHtml('ibanInputComponent({')
             ->assertSeeHtml("\$wire.\$entangle('data.iban')")
-            ->assertSeeHtml('dir="ltr"');
+            ->assertSeeHtml('<div class="flex items-center" dir="ltr">');
     }
 
     private function validateField(IbanInput $field, string $value): array
