@@ -21,7 +21,7 @@ class FilamentIbanServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         FilamentAsset::register([
-            Css::make('filament-iban-input', __DIR__ . '/../resources/dist/filament-iban-input.css')
+            Css::make('filament-iban-input', __DIR__.'/../resources/dist/filament-iban-input.css')
                 ->loadedOnRequest(),
         ], 'granitehldg/filament-iban-input');
     }

@@ -201,7 +201,7 @@ class IbanInput extends Field
             return false;
         }
 
-        $rearranged = substr($stripped, 4) . substr($stripped, 0, 4);
+        $rearranged = substr($stripped, 4).substr($stripped, 0, 4);
         $numeric = '';
 
         for ($i = 0, $iMax = strlen($rearranged); $i < $iMax; $i++) {

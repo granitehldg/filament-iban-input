@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Granite\FilamentIban\Tests\Feature;
 
+use Filament\Schemas\Schema;
 use Filament\Support\Facades\FilamentAsset;
 use Granite\FilamentIban\Forms\Components\IbanInput;
+use Granite\FilamentIban\Tests\Fixtures\IbanForm;
+use Granite\FilamentIban\Tests\Fixtures\LegacyIbanForm;
 use Granite\FilamentIban\Tests\TestCase;
+use Livewire\Livewire;
 
 final class IbanInputFieldTest extends TestCase
 {
@@ -109,6 +113,16 @@ final class IbanInputFieldTest extends TestCase
         self::assertStringNotContainsString('>>>>>>>', $view);
         self::assertStringContainsString('<div class="flex items-center" dir="ltr">', $view);
         self::assertGreaterThanOrEqual(2, substr_count($view, 'dir="ltr"'));
+    }
+
+    public function test_it_renders_inside_a_livewire_form(): void
+    {
+        $form = class_exists(Schema::class) ? IbanForm::class : LegacyIbanForm::class;
+
+        Livewire::test($form)
+            ->assertSeeHtml('ibanInputComponent({')
+            ->assertSeeHtml("\$wire.\$entangle('data.iban')")
+            ->assertSeeHtml('dir="ltr"');
     }
 
     private function validateField(IbanInput $field, string $value): array
