@@ -19,7 +19,6 @@ abstract class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         return array_values(array_filter([
-            LivewireServiceProvider::class,
             BladeIconsServiceProvider::class,
             BladeHeroiconsServiceProvider::class,
             SupportServiceProvider::class,
@@ -27,6 +26,8 @@ abstract class TestCase extends Orchestra
             SchemasServiceProvider::class, // Filament 4+
             FormsServiceProvider::class,
             FilamentIbanServiceProvider::class,
+            // Last, as in real apps: Filament < 4.13.3 / < 5.9 rebinds Livewire's DataStore as non-shared.
+            LivewireServiceProvider::class,
         ], 'class_exists'));
     }
 

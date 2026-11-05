@@ -8,9 +8,8 @@ All notable changes to `granitehldg/filament-iban-input` are documented here. Th
 
 ### Added
 
-- Filament v5 support (`filament/forms`, `filament/support` `^3.3.53 || ^4.13.3 || ^5.9`).
-- Minimum Filament versions raised to the oldest tested releases: 3.3.53, 4.13.3 and 5.9.0.
-- CI matrix runs tests against Filament v3, v4 and v5, at both the lowest allowed and the latest versions.
+- Filament v5 support (`filament/forms`, `filament/support` `^3.0 || ^4.0 || ^5.0`).
+- CI matrix runs tests against Filament v3, v4 and v5, at both the lowest installable and the latest Filament versions.
 - Test that renders `IbanInput` inside a Livewire form.
 
 ### Changed (breaking)
