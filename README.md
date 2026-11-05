@@ -14,12 +14,12 @@ A [Filament](https://filamentphp.com) form field for IBAN (International Bank Ac
 - Mod-97 checksum validation (can be disabled)
 - Server-side + client-side (Alpine.js) validation
 - Dark mode support, LTR-safe, copy-to-clipboard
-- Works with Filament v3 and v4
+- Works with Filament v3, v4 and v5
 
 ## Requirements
 
 - PHP `^8.2` with `ext-bcmath`
-- Laravel with Filament `^3.0 || ^4.0`
+- Laravel with Filament `^3.0 || ^4.0 || ^5.0`
 
 ## Installation
 
