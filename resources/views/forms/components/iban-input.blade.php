@@ -220,8 +220,14 @@
         },
 
         handleInput() {
-            const { formatted } = this.formatBody(this.displayValue);
-            this.displayValue = formatted;
+            // A body starts with check digits, so leading letters are a pasted country code.
+            const pastedCountry = this.normalize(this.displayValue).substring(0, 2);
+
+            if (/^[A-Z]{2}$/.test(pastedCountry) && this.countries.includes(pastedCountry)) {
+                this.countryCode = pastedCountry;
+                this.displayValue = this.normalize(this.displayValue).substring(2);
+            }
+
             this.updateFullIban();
         },
 
@@ -229,7 +235,7 @@
             const { formatted, normalized } = this.formatBody(this.displayValue);
             this.displayValue = formatted;
             this.fullIban = this.countryCode + normalized;
-            this.state = this.fullIban;
+            this.state = normalized === '' ? null : this.fullIban;
             this.updateValidation();
         },
 
