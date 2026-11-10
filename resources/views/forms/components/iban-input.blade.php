@@ -63,6 +63,7 @@
                     autocomplete="off"
                     spellcheck="false"
                     dir="ltr"
+                    id="{{ $getId() }}"
                     class="fi-iban-input"
                 />
             @else
@@ -75,6 +76,7 @@
                     autocomplete="off"
                     spellcheck="false"
                     dir="ltr"
+                    id="{{ $getId() }}"
                     class="fi-iban-input"
                 />
             @endif

@@ -10,6 +10,7 @@ use Granite\FilamentIban\Forms\Components\IbanInput;
 use Granite\FilamentIban\Tests\Fixtures\IbanForm;
 use Granite\FilamentIban\Tests\Fixtures\LegacyIbanForm;
 use Granite\FilamentIban\Tests\TestCase;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Livewire;
 
 final class IbanInputFieldTest extends TestCase
@@ -82,7 +83,7 @@ final class IbanInputFieldTest extends TestCase
         $errors = $this->validateField($field, 'GB29NWBK6016133192681');
 
         self::assertSame([
-            'The iban must contain exactly 20 characters after the country code.',
+            'The IBAN must contain exactly 20 characters after the country code.',
         ], $errors);
     }
 
@@ -92,7 +93,7 @@ final class IbanInputFieldTest extends TestCase
         $errors = $this->validateField($field, 'GBHYNWBK60161331926819');
 
         self::assertSame([
-            'The iban must contain two numeric check digits after the country code.',
+            'The IBAN must contain two numeric check digits after the country code.',
         ], $errors);
     }
 
@@ -119,22 +120,20 @@ final class IbanInputFieldTest extends TestCase
     {
         $form = class_exists(Schema::class) ? IbanForm::class : LegacyIbanForm::class;
 
-        Livewire::test($form)
+        $html = Livewire::test($form)
             ->assertSeeHtml('ibanInputComponent({')
             ->assertSeeHtml("\$wire.\$entangle('data.iban')")
-            ->assertSeeHtml('<div class="fi-iban-row" dir="ltr">');
+            ->assertSeeHtml('<div class="fi-iban-row" dir="ltr">')
+            ->html();
+
+        // The field label must point at the input, or clicking it and screen readers miss the field.
+        self::assertMatchesRegularExpression('/<label[^>]*for="([^"]+)".*<input[^>]*id="\1"/s', $html);
     }
 
     private function validateField(IbanInput $field, string $value): array
     {
-        $errors = [];
-        $rules = $field->getValidationRules();
-        $rule = $rules[1];
+        $rule = $field->getValidationRules()[1];
 
-        $rule('iban', $value, function (string $message) use (&$errors): void {
-            $errors[] = $message;
-        });
-
-        return $errors;
+        return Validator::make(['iban' => $value], ['iban' => [$rule]], [], ['iban' => 'IBAN'])->errors()->all();
     }
 }
