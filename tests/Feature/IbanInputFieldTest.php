@@ -111,7 +111,7 @@ final class IbanInputFieldTest extends TestCase
         self::assertStringNotContainsString('<<<<<<<', $view);
         self::assertStringNotContainsString('=======', $view);
         self::assertStringNotContainsString('>>>>>>>', $view);
-        self::assertStringContainsString('<div class="flex items-center" dir="ltr">', $view);
+        self::assertStringContainsString('<div class="fi-iban-row" dir="ltr">', $view);
         self::assertGreaterThanOrEqual(2, substr_count($view, 'dir="ltr"'));
     }
 
@@ -122,7 +122,7 @@ final class IbanInputFieldTest extends TestCase
         Livewire::test($form)
             ->assertSeeHtml('ibanInputComponent({')
             ->assertSeeHtml("\$wire.\$entangle('data.iban')")
-            ->assertSeeHtml('<div class="flex items-center" dir="ltr">');
+            ->assertSeeHtml('<div class="fi-iban-row" dir="ltr">');
     }
 
     private function validateField(IbanInput $field, string $value): array
