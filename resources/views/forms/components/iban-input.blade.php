@@ -35,16 +35,16 @@
             'is-invalid': isValid === false,
         }"
     >
-        <div class="flex items-center" dir="ltr">
+        <div class="fi-iban-row" dir="ltr">
             @if (! $acceptAllCountries)
                 @if (count($countries) === 1)
-                    <span class="fi-iban-country-label border-0 bg-transparent py-1.5 pl-3 pr-3 text-gray-950 dark:text-white text-sm font-medium sm:text-sm sm:leading-6 select-none">{{ $countries[0] }}</span>
+                    <span class="fi-iban-country-label">{{ $countries[0] }}</span>
                 @else
                     <select
                         x-model="countryCode"
                         @change="updateFullIban"
                         :disabled="disabled"
-                        class="fi-iban-country-select border-0 bg-transparent py-1.5 pl-3 pr-7 text-gray-950 dark:text-white text-sm font-medium focus:ring-0 sm:text-sm sm:leading-6"
+                        class="fi-iban-country-select"
                     >
                         @foreach ($countries as $country)
                             <option value="{{ $country }}">{{ $country }}</option>
@@ -52,7 +52,7 @@
                     </select>
                 @endif
 
-                <div class="h-5 w-px bg-gray-200 dark:bg-white/10"></div>
+                <div class="fi-iban-divider"></div>
 
                 <input
                     type="text"
@@ -63,7 +63,8 @@
                     autocomplete="off"
                     spellcheck="false"
                     dir="ltr"
-                    class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
+                    id="{{ $getId() }}"
+                    class="fi-iban-input"
                 />
             @else
                 <input
@@ -75,21 +76,22 @@
                     autocomplete="off"
                     spellcheck="false"
                     dir="ltr"
-                    class="fi-iban-input min-w-0 flex-1 border-0 bg-transparent py-1.5 px-3 text-gray-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 font-mono uppercase"
+                    id="{{ $getId() }}"
+                    class="fi-iban-input"
                 />
             @endif
 
-            <div class="flex items-center px-3">
+            <div class="fi-iban-status">
                 <template x-if="isValid === true">
-                    <div class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-500/20">
-                        <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="fi-iban-status-badge fi-iban-status-valid">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
                         </svg>
                     </div>
                 </template>
                 <template x-if="isValid === false">
-                    <div class="flex items-center justify-center w-6 h-6 rounded-full bg-red-100 dark:bg-red-500/20">
-                        <svg class="h-4 w-4 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="fi-iban-status-badge fi-iban-status-invalid">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
                     </div>
@@ -218,8 +220,14 @@
         },
 
         handleInput() {
-            const { formatted } = this.formatBody(this.displayValue);
-            this.displayValue = formatted;
+            // A body starts with check digits, so leading letters are a pasted country code.
+            const pastedCountry = this.normalize(this.displayValue).substring(0, 2);
+
+            if (/^[A-Z]{2}$/.test(pastedCountry) && this.countries.includes(pastedCountry)) {
+                this.countryCode = pastedCountry;
+                this.displayValue = this.normalize(this.displayValue).substring(2);
+            }
+
             this.updateFullIban();
         },
 
@@ -227,7 +235,7 @@
             const { formatted, normalized } = this.formatBody(this.displayValue);
             this.displayValue = formatted;
             this.fullIban = this.countryCode + normalized;
-            this.state = this.fullIban;
+            this.state = normalized === '' ? null : this.fullIban;
             this.updateValidation();
         },
 

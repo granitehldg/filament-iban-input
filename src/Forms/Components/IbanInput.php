@@ -226,13 +226,13 @@ class IbanInput extends Field
                 $countryCode = substr($normalized, 0, 2);
 
                 if (strlen($countryCode) !== 2 || ! ctype_alpha($countryCode)) {
-                    $fail("The {$attribute} has an invalid country code.");
+                    $fail("The :attribute has an invalid country code.");
 
                     return;
                 }
 
                 if (! $this->acceptsAllCountries() && ! in_array($countryCode, $this->getCountries(), true)) {
-                    $fail("The {$attribute} has an invalid country code.");
+                    $fail("The :attribute has an invalid country code.");
 
                     return;
                 }
@@ -240,13 +240,13 @@ class IbanInput extends Field
                 $countryLengths = $this->getCountryLengths();
 
                 if (! array_key_exists($countryCode, $countryLengths) && $this->acceptsAllCountries()) {
-                    $fail("The {$attribute} country code does not support IBAN.");
+                    $fail("The :attribute country code does not support IBAN.");
 
                     return;
                 }
 
                 if (! ctype_digit(substr($normalized, 2, 2))) {
-                    $fail("The {$attribute} must contain two numeric check digits after the country code.");
+                    $fail("The :attribute must contain two numeric check digits after the country code.");
 
                     return;
                 }
@@ -255,13 +255,13 @@ class IbanInput extends Field
                 $expectedLength = $countryLengths[$countryCode] ?? $this->getMaxDigits();
 
                 if (strlen($body) !== $expectedLength) {
-                    $fail("The {$attribute} must contain exactly {$expectedLength} characters after the country code.");
+                    $fail("The :attribute must contain exactly {$expectedLength} characters after the country code.");
 
                     return;
                 }
 
                 if ($this->shouldValidateChecksum() && ! static::validateIbanChecksum($normalized)) {
-                    $fail("The {$attribute} has an invalid checksum.");
+                    $fail("The :attribute has an invalid checksum.");
                 }
             };
         });
